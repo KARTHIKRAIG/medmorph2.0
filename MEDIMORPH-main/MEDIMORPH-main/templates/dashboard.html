@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MEDIMORPH</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #ecf0f1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 1400px;
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .upload-section {
+            background: var(--light-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 2px dashed #bdc3c7;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .medication-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+        .medication-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .medication-card.taken {
+            border-left-color: var(--success-color);
+            background: #f8fff9;
+        }
+        .medication-card.taken .btn-take {
+            background: var(--success-color);
+            pointer-events: none;
+        }
+        .real-time-notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 9999;
+            background: var(--success-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.2);
+            font-size: 1.2rem;
+            display: none;
+        }
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .table th {
+            background: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .table td {
+            color: #333;
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background: #f8f9fa;
+        }
+        .table-hover tbody tr:hover {
+            background: #eaf6fb;
+        }
+        .form-section {
+            background: var(--light-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .form-label {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-color), #c0392b);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+        }
+        .reminder-list {
+            list-style: none;
+            padding: 0;
+        }
+        .reminder-list li {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .reminder-list .reminder-time {
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+        .reminder-list .reminder-message {
+            color: #333;
+        }
+        .reminder-list .btn {
+            margin-left: 1rem;
+        }
+        @media (max-width: 900px) {
+            .main-container {
+                max-width: 98vw;
+            }
+        }
+        @media (max-width: 600px) {
+            .main-container {
+                padding: 0.5rem;
+            }
+            .header, .content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- ...rest of dashboard.html content... -->
+</body>
+</html>

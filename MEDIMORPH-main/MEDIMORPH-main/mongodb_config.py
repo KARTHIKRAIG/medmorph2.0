@@ -4,7 +4,7 @@ from flask_pymongo import PyMongo
 
 # MongoDB Configuration
 MONGODB_URI = "mongodb://localhost:27017/"
-MONGODB_DB = "medimorph"
+MONGODB_DB = "medimorph"  # Switched back to the original database
 
 # MongoDB Client
 def get_mongodb_client():
